@@ -7,7 +7,7 @@ endif
 g:loaded_richpresence = 1
 
 #prepare for talking to discord
-var s:plugin_dir = expand("<sfile>:p:h:h")
+var plugin_dir = expand("<sfile>:p:h:h")
 function g:Init_rich_presence()
 	let pid = getpid()
 	python3 << EOF
@@ -33,7 +33,7 @@ endfunction
 
 #refresh the prersence
 function g:Set_presence()
-	let filename = expand("%:t")
+	let filename = expand("%F")
 	let filetype = &ft
 	if len(filename) == 0
 		let filename = "New file"

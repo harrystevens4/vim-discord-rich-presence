@@ -12,7 +12,7 @@ class discord_ipc:
 		self.start_time = int(time.time())
 		self.pid = pid
 		#find discords ipc socket
-		discord_socket_locations = ["/tmp/discord-ipc-0"]
+		discord_socket_locations = ["/var/run/user/1000/discord-ipc-0"]
 		if discord_socket_path == None:
 			for i in discord_socket_locations:
 				if os.path.exists(i):
