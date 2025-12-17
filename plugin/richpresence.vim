@@ -33,7 +33,7 @@ endfunction
 
 #refresh the prersence
 function g:Set_presence()
-	let filename = expand("%F")
+	let filename = expand("%:p")
 	let filetype = &ft
 	if len(filename) == 0
 		let filename = "New file"
