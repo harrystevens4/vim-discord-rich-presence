@@ -11,23 +11,37 @@ var plugin_dir = expand("<sfile>:p:h:h")
 function g:Init_rich_presence()
 	let pid = getpid()
 	python3 << EOF
+
+#====== initialise python ======#
 from sys import path
 import vim
 import time
+import os
+import uuid
+from datetime import datetime
+
 
 python_root = f"{vim.eval('s:plugin_dir')}/python" #get to the python dir to import module
 path.insert(0,python_root) #allows module importing
 
-pid = int(vim.eval("pid"))
+#hide your name from the path
+import getpass
+def redact_path(path):
+	return path.replace(f"/{getpass.getuser()}/","/[user]/")
 
-import discord_rich_presence
+#====== initialise discord rpc ======#
+from rpc import DiscordRPC
 
-#use threaded version instead of this one
-#discord = discord_rich_presence.discord_ipc(pid)
-discord = discord_rich_presence.threaded_discord_rich_presence(pid)
+#initialise an RPC connection
+try:
+	discord_rpc = DiscordRPC("439476230543245312",timeout=0.5) #1s timeout to not keep the user waiting
+except TimeoutError:
+	vim.command('echo "failed to initialise discord rich presence"')
+	discord_rpc = None
+except FileNotFoundError:
+	vim.command('echo "discord rich presence not available"')
+	discord_rpc = None
 
-#also obselete when threading
-#discord.handshake() #so it is ready to get our data
 EOF
 endfunction
 
@@ -41,12 +55,51 @@ function g:Set_presence()
 	if len(filetype) == 0
 		let filetype = "Text"
 	endif
-	python3 discord.start_presence(f"Editing: {vim.eval('filename')}",f"Type: {vim.eval('filetype')}")
+	python3 << EOF
+
+#is rich presence setup
+if discord_rpc:
+	#activity details
+	activity = {
+		"details": f"Editing {vim.eval("filename")}",
+		"state": f"Type: {vim.eval("filetype")}",
+		"type": 5, #competing
+		"instance": True,
+		"timestamps": {
+			"start": int(datetime.now().timestamp())
+		},
+	}
+
+	#prep new rich presence data
+	data = {
+		"cmd": "SET_ACTIVITY",
+		"args": {
+			"pid": os.getpid(),
+			"activity": activity,
+		},
+		"nonce": str(uuid.uuid4()),
+	}
+	discord_rpc.send(data)
+
+EOF
 endfunction
 
-#kill the socket
 function g:Stop_presence()
-	python3 discord.stop()
+	python3 << EOF
+#if discord_rpc:
+#	#hopefully clear rich pre
+#	data = {
+#		"cmd": "SET_ACTIVITY",
+#		"args": {
+#			"pid": os.getpid(),
+#			"activity": {},
+#		},
+#		"nonce": str(uuid.uuid4()),
+#	}
+#	discord_rpc.send(data)
+EOF
+	python3 [discord_rpc.close() if discord_rpc != None else None]
+	python3 discord_rpc = None
 endfunction
 
 function g:Rich_presence_full_start()
