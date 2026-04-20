@@ -35,7 +35,7 @@ from rpc import DiscordRPC
 #initialise an RPC connection
 try:
 	discord_rpc = DiscordRPC("439476230543245312",timeout=0.5) #1s timeout to not keep the user waiting
-except TimeoutError:
+except (TimeoutError,ConnectionRefusedError):
 	vim.command('echo "failed to initialise discord rich presence"')
 	discord_rpc = None
 except FileNotFoundError:
@@ -86,17 +86,17 @@ endfunction
 
 function g:Stop_presence()
 	python3 << EOF
-#if discord_rpc:
-#	#hopefully clear rich pre
-#	data = {
-#		"cmd": "SET_ACTIVITY",
-#		"args": {
-#			"pid": os.getpid(),
-#			"activity": {},
-#		},
-#		"nonce": str(uuid.uuid4()),
-#	}
-#	discord_rpc.send(data)
+if discord_rpc:
+	#hopefully clear rich pre
+	data = {
+		"cmd": "SET_ACTIVITY",
+		"args": {
+			"pid": os.getpid(),
+			"activity": None,
+		},
+		"nonce": str(uuid.uuid4()),
+	}
+	discord_rpc.send(data)
 EOF
 	python3 [discord_rpc.close() if discord_rpc != None else None]
 	python3 discord_rpc = None
