@@ -26,8 +26,8 @@ path.insert(0,python_root) #allows module importing
 
 #hide your name from the path
 import getpass
-def redact_path(path):
-	return path.replace(f"/{getpass.getuser()}/","/[user]/")
+def use_tilda_for_home_folder(path):
+	return path.replace(f"/home/{getpass.getuser()}/","~/")
 
 #====== initialise discord rpc ======#
 from rpc import DiscordRPC
@@ -61,7 +61,7 @@ function g:Set_presence()
 if discord_rpc:
 	#activity details
 	activity = {
-		"details": f"Editing {vim.eval("filename")}",
+		"details": f"Editing {use_tilda_for_home_folder(vim.eval("filename"))}",
 		"state": f"Type: {vim.eval("filetype")}",
 		"type": 5, #competing
 		"instance": True,
