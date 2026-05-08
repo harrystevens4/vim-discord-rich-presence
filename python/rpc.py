@@ -27,7 +27,7 @@ class DiscordRPC:
 		self.send({"v": 1, "client_id": client_id},0)
 		opcode, data = self.recv()
 		if opcode != 1 or data["evt"] != "READY":
-			raise RuntimeError("No handshake response received")
+			raise ConnectionAbortedError("No handshake response received")
 	
 	def close(self):
 		self.send({},2)

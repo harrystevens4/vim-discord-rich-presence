@@ -35,7 +35,7 @@ from rpc import DiscordRPC
 #initialise an RPC connection
 try:
 	discord_rpc = DiscordRPC("439476230543245312",timeout=0.5) #1s timeout to not keep the user waiting
-except (TimeoutError,ConnectionRefusedError):
+except (TimeoutError,ConnectionRefusedError,ConnectionAbortedError):
 	vim.command('echo "failed to initialise discord rich presence"')
 	discord_rpc = None
 except FileNotFoundError:
